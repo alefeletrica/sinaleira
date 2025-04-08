@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Controle LED ESP32</title>
-  <script src="https://unpkg.com/paho-mqtt/mqtt.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/mqttws31.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -37,40 +37,49 @@
   </style>
 </head>
 <body>
-  <h1>Controle de LED via MQTT</h1>
+  <h1>Controle de LED via MQTT (Maqiatto)</h1>
   <button class="ligar" onclick="sendMessage('on')">Ligar</button>
   <button class="desligar" onclick="sendMessage('off')">Desligar</button>
 
   <script>
-    // Configurações do MQTT
+    // Dados do broker Maqiatto
     const broker = "maqiatto.com";
     const port = 8883;
     const user = "a212269@dac.unicamp.br";
     const password = "the5650@P";
     const topic = "a212269@dac.unicamp.br/led";
 
-    const clientID = "webClient-" + parseInt(Math.random() * 10000);
+    // Criação do client MQTT (WebSocket)
+    const clientID = "webClient-" + Math.floor(Math.random() * 10000);
     const client = new Paho.MQTT.Client(broker, port, clientID);
 
-    // Conexão
+    // Conectar
     client.connect({
       userName: user,
       password: password,
-      useSSL: false,
-      onSuccess: () => {
-        console.log("Conectado ao MQTT");
+      onSuccess: onConnect,
+      onFailure: (err) => {
+        console.error("Erro na conexão:", err.errorMessage);
+        alert("Erro ao conectar ao broker MQTT");
       },
-      onFailure: e => {
-        console.error("Erro de conexão:", e);
-      }
+      useSSL: false // WebSocket SEM SSL
     });
 
-    // Envia comando
-    function sendMessage(message) {
-      const mqttMessage = new Paho.MQTT.Message(message);
-      mqttMessage.destinationName = topic;
-      client.send(mqttMessage);
-      console.log("Mensagem enviada:", message);
+    // Ao conectar com sucesso
+    function onConnect() {
+      console.log("Conectado ao broker MQTT (Maqiatto)");
+    }
+
+    // Enviar mensagem
+    function sendMessage(command) {
+      if (client.isConnected()) {
+        const msg = new Paho.MQTT.Message(command);
+        msg.destinationName = topic;
+        client.send(msg);
+        console.log("Enviado:", command);
+      } else {
+        alert("MQTT não conectado. Tente novamente.");
+      }
     }
   </script>
 </body>
