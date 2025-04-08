@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Controle LED ESP32</title>
+  <script src="https://unpkg.com/paho-mqtt/mqtt.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 100px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      margin-bottom: 40px;
+    }
+    button {
+      font-size: 1.5em;
+      padding: 15px 30px;
+      margin: 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .ligar {
+      background-color: #28a745;
+      color: white;
+    }
+    .desligar {
+      background-color: #dc3545;
+      color: white;
+    }
+    button:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <h1>Controle de LED via MQTT</h1>
+  <button class="ligar" onclick="sendMessage('on')">Ligar</button>
+  <button class="desligar" onclick="sendMessage('off')">Desligar</button>
+
+  <script>
+    // Configurações do MQTT
+    const broker = "maqiatto.com";
+    const port = 8883;
+    const user = "a212269@dac.unicamp.br";
+    const password = "the5650@P";
+    const topic = "a212269@dac.unicamp.br/led";
+
+    const clientID = "webClient-" + parseInt(Math.random() * 10000);
+    const client = new Paho.MQTT.Client(broker, port, clientID);
+
+    // Conexão
+    client.connect({
+      userName: user,
+      password: password,
+      useSSL: false,
+      onSuccess: () => {
+        console.log("Conectado ao MQTT");
+      },
+      onFailure: e => {
+        console.error("Erro de conexão:", e);
+      }
+    });
+
+    // Envia comando
+    function sendMessage(message) {
+      const mqttMessage = new Paho.MQTT.Message(message);
+      mqttMessage.destinationName = topic;
+      client.send(mqttMessage);
+      console.log("Mensagem enviada:", message);
+    }
+  </script>
+</body>
+</html>
